@@ -1,11 +1,8 @@
-import process from 'node:process';
-import path from 'node:path';
-import {promisify} from 'node:util';
-import {fileURLToPath} from 'node:url';
-import {execFile} from 'node:child_process';
-import pMap from 'p-map';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const process = require('node:process');
+const path = require('node:path');
+const {promisify} = require('node:util');
+const {fileURLToPath} = require('node:url');
+const {execFile} = require('node:child_process');
 
 const execFileP = promisify(execFile);
 const binary = path.join(__dirname, 'file-icon');
@@ -61,7 +58,7 @@ const toCLIArgument = (file, {size, destination}) => {
 	return JSON.stringify(argument_);
 };
 
-export async function fileIconToBuffer(file, options) {
+exports.fileIconToBuffer = async function fileIconToBuffer(file, options) {
 	options = validate(file, options);
 
 	const files = toArray(file);
@@ -71,14 +68,14 @@ export async function fileIconToBuffer(file, options) {
 		return stdout;
 	};
 
-	const buffers = await pMap(files, mapper, {concurrency: 8});
+	const buffers = await Promise.all(files.map(mapper));
 
 	return buffers.length === 1 && !Array.isArray(file)
 		? buffers[0]
 		: buffers;
 }
 
-export async function fileIconToFile(file, options) {
+exports.fileIconToFile = async function fileIconToFile(file, options) {
 	options = validate(file, options);
 
 	const isArray = Array.isArray(file);
